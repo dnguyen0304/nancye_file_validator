@@ -1,11 +1,16 @@
+# -*- coding: utf-8 -*-
+
+import csv
+
 import pandas as pd
 
-# classes
 
+# Classes
 class SkewedDataError(Exception):
-    #classes put in other objects that they are similar to - 'inheritance'
-    #how to create a custom exception
+    # classes put in other objects that they are similar to - 'inheritance'
+    # how to create a custom exception
     pass
+
 
 # functions
 def handle_header(header_file_path, delimiter):
@@ -18,7 +23,7 @@ def handle_header(header_file_path, delimiter):
 def handle_file_path(file_path):
     index = file_path.rfind('.')
     file_path_returned = file_path[:index] + '-with-header' + file_path[index:]
-    
+
     return file_path_returned
 
 
@@ -38,7 +43,7 @@ def print_skewedness(file):
             print row
             print data[one_after]  
 
-            
+
 def print_headers(data_frame):
     for column in data_frame:
         print column + ': ' + str(len(data_frame[column].unique()))
@@ -46,7 +51,8 @@ def print_headers(data_frame):
             for unique_value in data_frame[column].unique():
                 print ' - ' + str(unique_value)
         print ''
-        
+
+
 def get_unique_line_lengths(file_path, delimiter, header_file_path=None):
     line_lengths = set()
         # a set only allows unique values - prevent duplication of the same line length (just count as 1)
@@ -59,19 +65,20 @@ def get_unique_line_lengths(file_path, delimiter, header_file_path=None):
     if header_file_path:
         headers_list=handle_header(header_file_path, delimiter)
         line_lengths.add(len(headers_list))
-    
+
     return line_lengths
+
 
 def is_not_skewed(file_path, delimiter, header_file_path=None):
     line_lengths = get_unique_line_lengths(file_path=file_path, 
-                                    delimiter=delimiter,
-                                   header_file_path=header_file_path)
+                                           delimiter=delimiter,
+                                           header_file_path=header_file_path)
     if len(line_lengths) != 1:
         return False
     else:
         return True
 
-            
+
 # 1. ask user the file path
 file_path = raw_input('Please specify the full path to this data file: ')
 
@@ -119,12 +126,12 @@ while True:
 
     if_header = raw_input(
     """According to the printed text, does this file contain a header row?
-        
+
     Type 1 for Yes
     Type 2 for No
     """
     )
-    
+
     try:
         if header_mapping[int(if_header)] == 'Yes':
             if is_not_skewed(file_path=file_path, delimiter=real_delimiter):
@@ -132,31 +139,40 @@ while True:
                 print 'This file is not skewed. Awesome.'
             else:
                 raise SkewedDataError
-            #print 'This file has a header and is not skewed.  Please proceed to the next test.'
+            # print 'This file has a header and is not skewed.  Please proceed to the next test.'
         else:
             print 'This file does not have a header.  Please append one.'
             header_file_path = raw_input('Please specify the full path to this headers file: ')
             file_path_returned = handle_file_path(file_path)
-            if is_not_skewed(file_path=file_path, delimiter=real_delimiter, header_file_path=header_file_path):
-                names = handle_header(header_file_path=header_file_path, delimiter=real_delimiter)
-                data_frame = pd.read_table(file_path, names=names, sep=real_delimiter, index_col=False)
+            if is_not_skewed(file_path=file_path,
+                             delimiter=real_delimiter,
+                             header_file_path=header_file_path):
+                names = handle_header(header_file_path=header_file_path,
+                                      delimiter=real_delimiter)
+                data_frame = pd.read_table(file_path,
+                                           names=names,
+                                           sep=real_delimiter,
+                                           index_col=False)
                 data_frame.to_csv(file_path_returned, index=False)
                 print 'This file now has a header, is not skewed, and has been returned to you for further testing.'
             else:
                 raise SkewedDataError
-        # 6- print all column headers in returned data_frame and if the number of unique values is <= 20, print all unique values
+        # 6- print all column headers in returned data_frame and if the
+        # number of unique values is <= 20, print all unique values
         print_headers(data_frame)
         break
-    # 5- if file is skewed, catch the CParserError, print the Excel line # of the skewed line 
-    # in addition to the skewed line and the two surrounding lines
+    # 5- if file is skewed, catch the CParserError, print the Excel
+    # line # of the skewed line in addition to the skewed line and the
+    # two surrounding lines
     except SkewedDataError:
         print 'Failure.  This file is skewed.'
         if header_mapping[int(if_header)] == 'Yes':
-            with open (file_path, 'rb') as file:
+            with open(file_path, 'rb') as file:
                 print_skewedness(file)
         else:
-            with open (file_path_returned, 'rb') as file:
-                print_skewedness(file)     
+            with open(file_path_returned, 'rb') as file:
+                print_skewedness(file)
         break
     except (KeyError, ValueError):
         print 'That is not a valid response.  Please try again.'
+
