@@ -63,7 +63,7 @@ def get_unique_line_lengths(file_path, delimiter, header_file_path=None):
             line_lengths.add(len(line))
             # instead of .append (for a list), we're using a set, so the method is .add
     if header_file_path:
-        headers_list=handle_header(header_file_path, delimiter)
+        headers_list = handle_header(header_file_path, delimiter)
         line_lengths.add(len(headers_list))
 
     return line_lengths
@@ -143,20 +143,29 @@ while True:
         else:
             print 'This file does not have a header.  Please append one.'
             header_file_path = raw_input('Please specify the full path to this headers file: ')
+
+            # Read in the header.
+            with open(header_file_path, 'rb') as file:
+                header = file.read()
+            # Read in the body.
+            with open(file_path, 'rb') as file:
+                body = file.read()
+
+            # Create a file with the header and body data combined.
             file_path_returned = handle_file_path(file_path)
+            with open(file_path_returned, 'wb') as file:
+                file.writelines([header, body])
+
             if is_not_skewed(file_path=file_path,
                              delimiter=real_delimiter,
                              header_file_path=header_file_path):
-                names = handle_header(header_file_path=header_file_path,
-                                      delimiter=real_delimiter)
-                data_frame = pd.read_table(file_path,
-                                           names=names,
-                                           sep=real_delimiter,
-                                           index_col=False)
-                data_frame.to_csv(file_path_returned, index=False)
-                print 'This file now has a header, is not skewed, and has been returned to you for further testing.'
+                data_frame = pd.read_csv(file_path_returned, sep=real_delimiter)
+                message = ("""The data is not skewed, now has a header, and """
+                           """has been returned to you for further testing.""")
+                print message
             else:
                 raise SkewedDataError
+
         # 6- print all column headers in returned data_frame and if the
         # number of unique values is <= 20, print all unique values
         print_headers(data_frame)
