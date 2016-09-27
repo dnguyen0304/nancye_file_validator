@@ -54,8 +54,8 @@ def print_headers(data_frame):
 
 
 def get_unique_line_lengths(file_path, delimiter, header_file_path=None):
+    # a set only allows unique values - prevent duplication of the same line length (just count as 1)
     line_lengths = set()
-        # a set only allows unique values - prevent duplication of the same line length (just count as 1)
     with open(file_path, 'rb') as file:
         # open returns a 'file object'
         for line in csv.reader(file, delimiter=',', quotechar='"'):
@@ -87,7 +87,7 @@ with open(file_path) as myfile:
     sample_1 = [next(myfile) for x in xrange(2)]
 print sample_1
 
-# 3. ask user for the delimiter        
+# 3. ask user for the delimiter
 delimiter_mapping = {
         1: ',', 
         2: '\t', 
