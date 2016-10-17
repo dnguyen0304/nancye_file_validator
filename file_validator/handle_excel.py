@@ -1,6 +1,4 @@
-import pandas as pd
 import xlrd
-import os.path
 import csv
 
 
@@ -22,7 +20,7 @@ def handle_excel(file_path):
     # convert list of cells to list of strings
     empty_body = []
     for source_row in worksheet.get_rows():
-        processed_row = [cell.value for cell in source_row]  
+        processed_row = [cell.value for cell in source_row]
         # lambda expression
         empty_body.append(processed_row)
         processed_row = []
@@ -32,6 +30,7 @@ def handle_excel(file_path):
         writer.writerows(empty_body)
     return new_file_path
 
-file_path=r"C:\Workspace\ma-somerville\test scores\ACCESS 16 Somerville.xlsx"
+
+file_path = ''
 handle_excel(file_path)
 
