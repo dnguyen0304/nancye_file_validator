@@ -5,7 +5,7 @@ import os
 
 from nose.tools import assert_list_equal
 
-from .. import handle_excel
+from .. import main
 
 try:
     data_directory = os.environ['FILE_VALIDATOR_DATA_DIRECTORY']
@@ -102,7 +102,7 @@ def _test_primitive_read_excel_helper(left, right):
         for line in csv.reader(file):
             csv_representation.append([unicode(value) for value in line])
 
-    xlsx_representation = handle_excel._primitive_read_excel(
+    xlsx_representation = main._primitive_read_excel(
         file_path=xlsx_file_path)
 
     assert_data_equal(xlsx_representation, csv_representation)
