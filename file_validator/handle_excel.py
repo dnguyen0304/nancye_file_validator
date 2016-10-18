@@ -1,5 +1,6 @@
-import xlrd
 import csv
+
+import xlrd
 
 
 def is_excel_skewed(file_path):
