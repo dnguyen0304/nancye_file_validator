@@ -3,17 +3,6 @@ import csv
 import xlrd
 
 
-def is_excel_skewed(file_path):
-    book = xlrd.open_workbook(file_path)
-    sheet = book.sheet_by_index(0)
-    header = sheet.row(0)
-    for cell in header:
-        print cell.ctype
-        if xlrd.sheet.ctype_text[cell.ctype] == 'empty':
-            return True
-    return False
-
-
 def convert_excel_to_csv(file_path):
 
     new_file_path = file_path.split('.')[0] + '_processed.csv'
