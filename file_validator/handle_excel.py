@@ -32,6 +32,7 @@ def handle_excel(file_path):
     return new_file_path
 
 
-file_path = ''
-handle_excel(file_path)
+if __name__ == '__main__':
+    file_path = ''
+    handle_excel(file_path)
 
