@@ -14,7 +14,7 @@ def is_excel_skewed(file_path):
     return False
 
 
-def handle_excel(file_path):
+def convert_excel_to_csv(file_path):
 
     new_file_path = file_path.split('.')[0] + '_processed.csv'
     data = _primitive_read_excel(file_path=file_path)
@@ -54,5 +54,5 @@ def _primitive_read_excel(file_path):
 
 if __name__ == '__main__':
     file_path = ''
-    handle_excel(file_path)
+    convert_excel_to_csv(file_path)
 
