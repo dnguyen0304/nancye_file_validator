@@ -122,6 +122,12 @@ if __name__ == '__main__':
     # 1. ask user the file path
     file_path = raw_input('Please specify the full path to this data file: ')
 
+    """
+    duyn: If it is an XLS or XLSX file, use convert_excel_to_csv(). The
+        returned file path replaces the existing variable. We no longer
+        need to ask for the delimiter. Otherwise, continue as normal.
+    """
+
     # 2. print the first couple of lines to determine delimiter
     with open(file_path) as myfile:
         sample_1 = [next(myfile) for x in xrange(2)]
@@ -224,4 +230,8 @@ if __name__ == '__main__':
             break
         except (KeyError, ValueError):
             print 'That is not a valid response.  Please try again.'
+
+    """
+    duyn: If it is an XLS or XLSX file, tear down the environment.
+    """
 
