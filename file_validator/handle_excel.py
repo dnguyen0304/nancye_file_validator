@@ -40,8 +40,3 @@ def _primitive_read_excel(file_path):
 
     return data
 
-
-if __name__ == '__main__':
-    file_path = ''
-    convert_excel_to_csv(file_path)
-
