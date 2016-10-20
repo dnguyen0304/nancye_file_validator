@@ -122,46 +122,56 @@ if __name__ == '__main__':
     # 1. ask user the file path
     file_path = raw_input('Please specify the full path to this data file: ')
 
-    """
-    duyn: If it is an XLS or XLSX file, use convert_excel_to_csv(). The
-        returned file path replaces the existing variable. We no longer
-        need to ask for the delimiter. Otherwise, continue as normal.
-    """
+    # Ask the user if it is a XLS or XLSX file.
+    is_excel = raw_input('Is this an Excel file?  Y / n: ')
 
-    # 2. print the first couple of lines to determine delimiter
-    with open(file_path) as myfile:
-        sample_1 = [next(myfile) for x in xrange(2)]
-    print sample_1
+    if is_excel.lower() == 'y':
+        excel_file_path = convert_excel_to_csv(file_path=file_path)
+        # Redefine the existing file_path variable so the Excel file,
+        # which has now been converted to CSV, can move through the
+        # same validation pipeline.
+        file_path = excel_file_path
+        real_delimiter = ','
 
-    # 3. ask user for the delimiter
-    delimiter_mapping = {
-            1: ',',
-            2: '\t',
-            3: '|',
-            4: ';',
-            5: ' ',
-            6: '-'
-        }
+        # 2. print the first couple of lines to determine delimiter
+        # TODO (duyn): bonus points if anyone figures out how to refactor this
+        with open(file_path) as myfile:
+            sample_1 = [next(myfile) for x in xrange(2)]
+        print sample_1
+    else:
+        with open(file_path) as myfile:
+            sample_1 = [next(myfile) for x in xrange(2)]
+        print sample_1
 
-    while True:
-        raw_delimiter = raw_input(
-        """According to the printed text, please enter the delimiter used in this file:
+        # 3. ask user for the delimiter
+        delimiter_mapping = {
+                1: ',',
+                2: '\t',
+                3: '|',
+                4: ';',
+                5: ' ',
+                6: '-'
+            }
 
-        Type 1 for comma (,)
-        Type 2 for tab (   )
-        Type 3 for pipe character (|)
-        Type 4 for semicolon (;)
-        Type 5 for space ( )
-        Type 6 for hyphen (-)
-        """
-        )
-        try:
-            real_delimiter = delimiter_mapping[int(raw_delimiter)]
-            break
-        except (ValueError, KeyError):
-            print 'That is not a valid delimiter.  Please try again.'
-        except KeyboardInterrupt:
-            break
+        while True:
+            raw_delimiter = raw_input(
+            """According to the printed text, please enter the delimiter used in this file:
+
+            Type 1 for comma (,)
+            Type 2 for tab (   )
+            Type 3 for pipe character (|)
+            Type 4 for semicolon (;)
+            Type 5 for space ( )
+            Type 6 for hyphen (-)
+            """
+            )
+            try:
+                real_delimiter = delimiter_mapping[int(raw_delimiter)]
+                break
+            except (ValueError, KeyError):
+                print 'That is not a valid delimiter.  Please try again.'
+            except KeyboardInterrupt:
+                break
 
     # 4. ask user if file contains header, and if necessary, append one
     while True:
@@ -231,7 +241,7 @@ if __name__ == '__main__':
         except (KeyError, ValueError):
             print 'That is not a valid response.  Please try again.'
 
-    """
-    duyn: If it is an XLS or XLSX file, tear down the environment.
-    """
+    # If it is an XLS or XLSX file, delete the temporary file.  Only in
+    # cases where the header is appended should the processed file be
+    # returned.
 
