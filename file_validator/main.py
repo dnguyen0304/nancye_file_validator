@@ -29,9 +29,9 @@ def handle_file_path(file_path):
     return file_path_returned
 
 
-def print_skewedness(file):
+def print_skewedness(file, delimiter):
     data = []
-    for row in csv.reader(file, delimiter=real_delimiter):
+    for row in csv.reader(file, delimiter=delimiter):
         data.append(row)
     headers_length = len(data[0])
     for row in data:
@@ -119,12 +119,17 @@ def _primitive_read_excel(file_path):
     return data
 
 
-if __name__ == '__main__':
+def main(file_path='',
+         is_excel='',
+         raw_delimiter='',
+         if_header='',
+         header_file_path=''):
+
     # 1. ask user the file path
-    file_path = raw_input('Please specify the full path to this data file: ')
+    file_path = file_path or raw_input('Please specify the full path to this data file: ')
 
     # Ask the user if it is a XLS or XLSX file.
-    is_excel = raw_input('Is this an Excel file?  Y / n: ')
+    is_excel = is_excel or raw_input('Is this an Excel file?  Y / n: ')
 
     if is_excel.lower() == 'y':
         excel_file_path = convert_excel_to_csv(file_path=file_path)
@@ -155,7 +160,7 @@ if __name__ == '__main__':
             }
 
         while True:
-            raw_delimiter = raw_input(
+            raw_delimiter = raw_delimiter or raw_input(
             """According to the printed text, please enter the delimiter used in this file:
 
             Type 1 for comma (,)
@@ -181,7 +186,7 @@ if __name__ == '__main__':
             2: 'No'
         }
 
-        if_header = raw_input(
+        if_header = if_header or raw_input(
         """According to the printed text, does this file contain a header row?
 
         Type 1 for Yes
@@ -199,7 +204,7 @@ if __name__ == '__main__':
                 # print 'This file has a header and is not skewed.  Please proceed to the next test.'
             else:
                 print 'This file does not have a header.  Please append one.'
-                header_file_path = raw_input('Please specify the full path to this headers file: ')
+                header_file_path = header_file_path or raw_input('Please specify the full path to this headers file: ')
 
                 # Read in the header.
                 with open(header_file_path, 'rb') as file:
@@ -234,10 +239,10 @@ if __name__ == '__main__':
             print 'Failure.  This file is skewed.'
             if header_mapping[int(if_header)] == 'Yes':
                 with open(file_path, 'rb') as file:
-                    print_skewedness(file)
+                    print_skewedness(file=file, delimiter=real_delimiter)
             else:
                 with open(file_path_returned, 'rb') as file:
-                    print_skewedness(file)
+                    print_skewedness(file=file, delimiter=real_delimiter)
             break
         except (KeyError, ValueError):
             print 'That is not a valid response.  Please try again.'
@@ -245,4 +250,8 @@ if __name__ == '__main__':
     # If it is an XLS or XLSX file, delete the temporary file.  Only in
     # cases where the header is appended should the processed file be
     # returned.
+
+
+if __name__ == '__main__':
+    main()
 
