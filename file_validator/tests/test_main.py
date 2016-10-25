@@ -3,7 +3,7 @@
 import csv
 import os
 
-from nose.tools import assert_list_equal
+from nose.tools import assert_equal, assert_list_equal
 
 from .. import main
 
@@ -32,12 +32,41 @@ def assert_data_equal(left, right):
 
     xlrd does not differentiate between integers and floats; both are
     stored as floats. Floats must be conditionally type casted into
-    integer string representations.
+    integer string representations. xlrd pads records with empty
+    values. Trailing missing data is dropped to achieve "fuzzy"
+    comparison.
     """
 
-    processed_left = _smart_float_coerce(data=left)
-    processed_right = _smart_float_coerce(data=right)
+    processed_left = _drop_trailing_missing_data(
+        _smart_float_coerce(data=left))
+    processed_right = _drop_trailing_missing_data(
+        _smart_float_coerce(data=right))
     assert_list_equal(processed_left, processed_right)
+
+
+def _drop_trailing_missing_data(data):
+
+    """
+    Returns List.
+
+    Drop trailing missing data for each record.
+
+    Parameters
+    ----------
+    data : Iterable
+    """
+
+    processed_data = list()
+
+    for record in data:
+        for value in reversed(record):
+            if value == '':
+                record.pop()
+            else:
+                break
+        processed_data.append(record)
+
+    return processed_data
 
 
 def _smart_float_coerce(data):
@@ -53,7 +82,7 @@ def _smart_float_coerce(data):
     data : Iterable
     """
 
-    processed_data = []
+    processed_data = list()
 
     for record in data:
         processed_record = list()
@@ -67,6 +96,24 @@ def _smart_float_coerce(data):
         processed_data.append(processed_record)
 
     return processed_data
+
+
+def test_drop_trailing_missing_data():
+
+    input_data = [['foo', 'bar', ''], ['eggs', 'ham', '']]
+    expected_data = [['foo', 'bar'], ['eggs', 'ham']]
+    output_data = _drop_trailing_missing_data(data=input_data)
+
+    assert_equal(output_data, expected_data)
+
+
+def test_smart_float_coerce():
+
+    input_data = [['foo', '0'], ['', '1']]
+    expected_data = [['foo', 0.0], ['', 1.0]]
+    output_data = _smart_float_coerce(data=input_data)
+
+    assert_equal(output_data, expected_data)
 
 
 def test_primitive_read_excel():
