@@ -107,6 +107,15 @@ def test_drop_trailing_missing_data():
     assert_equal(output_data, expected_data)
 
 
+def test_smart_float_coerce():
+
+    input_data = [['foo', '0'], ['', '1']]
+    expected_data = [['foo', 0.0], ['', 1.0]]
+    output_data = _smart_float_coerce(data=input_data)
+
+    assert_equal(output_data, expected_data)
+
+
 def test_primitive_read_excel():
 
     _test_primitive_read_excel_helper(left='students.xlsx',
