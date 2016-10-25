@@ -15,10 +15,10 @@ class SkewedDataError(Exception):
 
 # Functions
 def handle_header(header_file_path, delimiter):
-    headers_df = pd.read_table(header_file_path, sep=delimiter)
-    headers_list = headers_df.columns.tolist()
+    header_data_frame = pd.read_table(header_file_path, sep=delimiter)
+    headers = header_data_frame.columns.tolist()
 
-    return headers_list
+    return headers
 
 
 def handle_file_path(file_path):
@@ -28,13 +28,10 @@ def handle_file_path(file_path):
     return file_path_returned
 
 
-def print_skewedness(file):
-    data = []
-    for row in csv.reader(file, delimiter=real_delimiter):
-        data.append(row)
-    headers_length = len(data[0])
+def print_skewness(file):
+    data = [record for record in csv.reader(file, delimiter=real_delimiter)]
     for row in data:
-        if len(row) != headers_length:
+        if len(row) != len(data[0]):
             print data[0]
             skewed_line_number = data.index(row) + 1
             one_before = data.index(row) - 1
@@ -234,10 +231,10 @@ if __name__ == '__main__':
             print 'Failure. This file is skewed.'
             if has_header:
                 with open(file_path, 'rb') as file:
-                    print_skewedness(file)
+                    print_skewness(file)
             else:
                 with open(file_path_returned, 'rb') as file:
-                    print_skewedness(file)
+                    print_skewness(file)
             break
         except (KeyError, ValueError):
             print 'That is not a valid response. Please try again.'
