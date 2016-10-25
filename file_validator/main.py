@@ -7,13 +7,13 @@ import xlrd
 
 
 # Classes
+# NOTE (nancye): classes put in other objects that they are similar to - 'inheritance'
+# NOTE (nancye): This is how to define a custom exception.
 class SkewedDataError(Exception):
-    # classes put in other objects that they are similar to - 'inheritance'
-    # how to create a custom exception
     pass
 
 
-# functions
+# Functions
 def handle_header(header_file_path, delimiter):
     headers_df = pd.read_table(header_file_path, sep=delimiter)
     headers_list = headers_df.columns.tolist()
@@ -90,9 +90,12 @@ def convert_excel_to_csv(file_path):
 
 
 def _primitive_read_excel(file_path):
+
     """
     Returns List.
+
     Read an XLS or XLSX file.
+
     Parameters
     ----------
     file_path : String
@@ -105,25 +108,18 @@ def _primitive_read_excel(file_path):
     for row in worksheet.get_rows():
         processed_row = list()
         for cell in row:
-            #if not xlrd.sheet.ctype_text[cell.ctype] == 'empty':
             processed_row.append(unicode(cell.value))
-            continue
         data.append(processed_row)
 
     return data
 
 
 if __name__ == '__main__':
-    # 1. ask user the file path
+    # Ask for the file path.
     file_path = raw_input('Please specify the full path to this data file: ')
 
-    # Ask the user if it is a XLS or XLSX file.
-    is_excel = raw_input('Is this an Excel file?  Y / n: ')
-
-    if is_excel.lower() == 'y':
-        is_excel = True
-    else:
-        is_excel = False
+    # Ask if it is an XLS / XLSX file.
+    is_excel = raw_input('Is this an Excel file?  Y / n: ').lower() == 'y'
 
     if is_excel:
         excel_file_path = convert_excel_to_csv(file_path=file_path)
@@ -133,17 +129,18 @@ if __name__ == '__main__':
         file_path = excel_file_path
         real_delimiter = ','
 
-        # 2. print the first couple of lines to determine delimiter
-        # TODO (duyn): bonus points if anyone figures out how to refactor this
-        with open(file_path) as myfile:
-            sample_1 = [next(myfile) for x in xrange(2)]
+        # Display the first couple of lines so the user can identify
+        # the delimiter.
+        # TODO (duyn): There will be bonus points for whoever can refactor this duplicated code.
+        with open(file_path) as file:
+            sample_1 = [next(file) for x in xrange(2)]
         print sample_1
     else:
-        with open(file_path) as myfile:
-            sample_1 = [next(myfile) for x in xrange(2)]
+        with open(file_path) as file:
+            sample_1 = [next(file) for x in xrange(2)]
         print sample_1
 
-        # 3. ask user for the delimiter
+        # Ask for the delimiter.
         delimiter_mapping = {
             1: ',',
             2: '\t',
@@ -172,29 +169,25 @@ if __name__ == '__main__':
             except KeyboardInterrupt:
                 break
 
-    # 4. ask user if file contains header, and if necessary, append one
     while True:
-        has_header = raw_input('Does this file have a header?  Y / n: ')
-
-        if has_header.lower() == 'y':
-            has_header = True
-        else:
-            has_header = False
+        # Ask if a header exists.
+        has_header = raw_input('Does this file have a header?  Y / n: ').lower() == 'y'
 
         try:
             if has_header:
                 if is_excel:
-                    data = []
-                    with open(file_path) as myfile:
-                        for line in csv.reader(myfile):
-                            data.append(line)
-                    header_row = data[0]
-                    processed_header = []
-                    for field in header_row:
+                    # Replace the existing header with a processed one.
+                    with open(file_path) as file:
+                        data = [record for record in csv.reader(file)]
+                    header = data[0]
+
+                    processed_header = list()
+                    for field in header:
                         if field != '':
                             processed_header.append(field)
                         else:
                             break
+
                     data[0] = processed_header
                     with open(file_path, 'wb') as file:
                         csv.writer(file).writerows(data)
@@ -203,11 +196,11 @@ if __name__ == '__main__':
                     print 'This file is not skewed. Awesome.'
                 else:
                     raise SkewedDataError
-                    # print 'This file has a header and is not skewed.  Please proceed to the next test.'
             else:
-                print 'This file does not have a header.  Please append one.'
-                header_file_path = raw_input("""Please specify the full path to this headers file """
-                                             """as a CSV: """)
+                print 'This file does not have a header. Please append one.'
+                header_file_path = raw_input(
+                    """Please specify the full path to the headers file (It """
+                    """must be formatted as a CSV): """)
 
                 # Read in the header.
                 with open(header_file_path, 'rb') as file:
@@ -231,16 +224,15 @@ if __name__ == '__main__':
                 else:
                     raise SkewedDataError
 
-            # 6- print all column headers in returned data_frame and if the
-            # number of unique values is <= 20, print all unique values
+            # Display the fields labels along with the corresponding
+            # unique field values.
             print_headers(data_frame)
             break
-        # 5- if file is skewed, catch the CParserError, print the Excel
-        # line # of the skewed line in addition to the skewed line and the
-        # two surrounding lines
+        # Catch the SkewedDataError and display the skewed line along
+        # with some context.
         except SkewedDataError:
-            print 'Failure.  This file is skewed.'
-            if has_header == True:
+            print 'Failure. This file is skewed.'
+            if has_header:
                 with open(file_path, 'rb') as file:
                     print_skewedness(file)
             else:
@@ -248,8 +240,9 @@ if __name__ == '__main__':
                     print_skewedness(file)
             break
         except (KeyError, ValueError):
-            print 'That is not a valid response.  Please try again.'
+            print 'That is not a valid response. Please try again.'
 
-            # If it is an XLS or XLSX file, delete the temporary file.  Only in
-            # cases where the header is appended should the processed file be
-            # returned.
+        # If it is an XLS or XLSX file, delete the temporary file. Only
+        # in cases where the header is appended should the processed
+        # file be returned.
+
