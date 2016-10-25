@@ -5,6 +5,7 @@ import csv
 
 import pandas as pd
 import xlrd
+from nose.tools import assert_is_not_none
 
 
 # Classes
@@ -12,6 +13,50 @@ class SkewedDataError(Exception):
     # classes put in other objects that they are similar to - 'inheritance'
     # how to create a custom exception
     pass
+
+
+class ValidationResults(object):
+
+    def __init__(self, is_skewed=None):
+
+        # To track a new validation result:
+        #   1. Add it as a new parameter to __init__()'s call signature.
+        #   2. Set its default value to None.
+        #   3. Set an instance attribute by the same name within
+        #      __init__().
+        #
+        # For example:
+        #     # before
+        #     def __init__(self):
+        #         pass
+        #
+        #     # after
+        #     def __init__(self, is_foo=None):
+        #         self.is_foo = is_foo
+
+        self.is_skewed = is_skewed
+
+    def validate(self):
+
+        """
+        Returns None.
+
+        Assert that all public attributes are not None.
+
+        Raises
+        ------
+        AssertionError
+        """
+
+        message = 'The validation result for "{result}" was not set.'
+
+        results = [attribute
+                   for attribute in dir(self)
+                   if not attribute.startswith('_') or attribute != 'validate']
+
+        for result in results:
+            assert_is_not_none(getattr(self, result),
+                               msg=message.format(result=result))
 
 
 # functions
@@ -125,6 +170,8 @@ def main(file_path='',
          if_header='',
          header_file_path=''):
 
+    validation_results = ValidationResults()
+
     # 1. ask user the file path
     file_path = file_path or raw_input('Please specify the full path to this data file: ')
 
@@ -198,6 +245,7 @@ def main(file_path='',
             if header_mapping[int(if_header)] == 'Yes':
                 if is_not_skewed(file_path=file_path, delimiter=real_delimiter):
                     data_frame = pd.read_table(file_path, sep=real_delimiter)
+                    validation_results.is_skewed = False
                     print 'This file is not skewed. Awesome.'
                 else:
                     raise SkewedDataError
@@ -250,6 +298,10 @@ def main(file_path='',
     # If it is an XLS or XLSX file, delete the temporary file.  Only in
     # cases where the header is appended should the processed file be
     # returned.
+
+    validation_results.validate()
+
+    return validation_results
 
 
 if __name__ == '__main__':
