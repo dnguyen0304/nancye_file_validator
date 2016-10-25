@@ -52,28 +52,50 @@ def print_headers(data_frame):
 
 
 def is_not_skewed(file_path, delimiter, header_file_path=None):
-    # a set only allows unique values - prevent duplication of the same line length (just count as 1)
-    data = []
+
+    """
+    Returns Dictionary.
+
+    Determine if the data is skewed.
+
+    "Skewness" describes data where the longest record of the body is
+    longer than the header. Empty fields at the tail of the header are
+    not included in the count.
+
+    Parameters
+    ----------
+    file_path : String
+        File name or path.
+    delimiter : String
+        Character defining the boundary between record values.
+    header_file_path : String, default None
+        File name or path to the header.
+    """
+
+    # NOTE (nancye): Sets are similar to lists except sets contain only
+    #   unique values. In addition, instead of using the .append(), you
+    #   use the .add().
     line_lengths = dict()
+    data = []
     body_line_lengths = set()
+
+    # NOTE (nancye): open() returns a file object.
     with open(file_path, 'rb') as file:
-        # open returns a 'file object'
-        for line in csv.reader(file, delimiter=delimiter, quotechar='"'):
+        # NOTE (nancye): csv.reader() is a function that accepts a
+        #   file object and returns an iterable.
+        for line in csv.reader(file, delimiter=delimiter):
             data.append(line)
-            # csv.reader is a function that takes a file object and turns it into something you can loop through
             body_line_lengths.add(len(line))
-            # instead of .append (for a list), we're using a set, so the method is .add
     line_lengths['body'] = max(body_line_lengths)
+
     if header_file_path:
-        headers_list = handle_header(header_file_path, delimiter)
-        line_lengths['header'] = len(headers_list)
+        headers = handle_header(header_file_path=header_file_path,
+                                delimiter=delimiter)
+        line_lengths['header'] = len(headers)
     else:
         line_lengths['header'] = len(data[0])
 
-    if line_lengths['header'] >= line_lengths['body']:
-        return True
-    else:
-        return False
+    return line_lengths['header'] >= line_lengths['body']
 
 
 def convert_excel_to_csv(file_path):
