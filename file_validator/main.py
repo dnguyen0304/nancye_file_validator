@@ -9,9 +9,9 @@ from nose.tools import assert_is_not_none
 
 
 # Classes
+# NOTE (nancye): classes put in other objects that they are similar to - 'inheritance'
+# NOTE (nancye): This is how to define a custom exception.
 class SkewedDataError(Exception):
-    # classes put in other objects that they are similar to - 'inheritance'
-    # how to create a custom exception
     pass
 
 
@@ -52,19 +52,19 @@ class ValidationResults(object):
 
         results = [attribute
                    for attribute in dir(self)
-                   if not attribute.startswith('_') or attribute != 'validate']
+                   if not attribute.startswith('_') and attribute != 'validate']
 
         for result in results:
             assert_is_not_none(getattr(self, result),
                                msg=message.format(result=result))
 
 
-# functions
+# Functions
 def handle_header(header_file_path, delimiter):
-    headers_df = pd.read_table(header_file_path, sep=delimiter)
-    headers_list = headers_df.columns.tolist()
+    header_data_frame = pd.read_table(header_file_path, sep=delimiter)
+    headers = header_data_frame.columns.tolist()
 
-    return headers_list
+    return headers
 
 
 def handle_file_path(file_path):
@@ -74,21 +74,18 @@ def handle_file_path(file_path):
     return file_path_returned
 
 
-def print_skewedness(file, delimiter):
-    data = []
-    for row in csv.reader(file, delimiter=delimiter):
-        data.append(row)
-    headers_length = len(data[0])
+def print_skewness(file, delimiter):
+    data = [record for record in csv.reader(file, delimiter=delimiter)]
     for row in data:
-        if len(row) != headers_length:
+        if len(row) != len(data[0]):
             print data[0]
             skewed_line_number = data.index(row) + 1
-            one_before = data.index(row) - 1 
+            one_before = data.index(row) - 1
             one_after = data.index(row) + 1
             print 'The line number of the skewed row is: ', skewed_line_number
             print data[one_before]
             print row
-            print data[one_after]  
+            print data[one_after]
 
 
 def print_headers(data_frame):
@@ -100,34 +97,54 @@ def print_headers(data_frame):
         print ''
 
 
-def get_unique_line_lengths(file_path, delimiter, header_file_path=None):
-    # a set only allows unique values - prevent duplication of the same line length (just count as 1)
-    line_lengths = set()
-    with open(file_path, 'rb') as file:
-        # open returns a 'file object'
-        for line in csv.reader(file, delimiter=',', quotechar='"'):
-            # csv.reader is a function that takes a file object and turns it into something you can loop through
-            line_lengths.add(len(line))
-            # instead of .append (for a list), we're using a set, so the method is .add
-    if header_file_path:
-        headers_list = handle_header(header_file_path, delimiter)
-        line_lengths.add(len(headers_list))
-
-    return line_lengths
-
-
 def is_not_skewed(file_path, delimiter, header_file_path=None):
-    line_lengths = get_unique_line_lengths(file_path=file_path, 
-                                           delimiter=delimiter,
-                                           header_file_path=header_file_path)
-    if len(line_lengths) != 1:
-        return False
+
+    """
+    Returns Dictionary.
+
+    Determine if the data is skewed.
+
+    "Skewness" describes data where the longest record of the body is
+    longer than the header. Empty fields at the tail of the header are
+    not included in the count.
+
+    Parameters
+    ----------
+    file_path : String
+        File name or path.
+    delimiter : String
+        Character defining the boundary between record values.
+    header_file_path : String, default None
+        File name or path to the header.
+    """
+
+    # NOTE (nancye): Sets are similar to lists except sets contain only
+    #   unique values. In addition, instead of using .append(), you use
+    #   .add().
+    line_lengths = dict()
+    data = list()
+    body_line_lengths = set()
+
+    # NOTE (nancye): open() returns a file object.
+    with open(file_path, 'rb') as file:
+        # NOTE (nancye): csv.reader() is a function that accepts a
+        #   file object and returns an iterable.
+        for line in csv.reader(file, delimiter=delimiter):
+            data.append(line)
+            body_line_lengths.add(len(line))
+    line_lengths['body'] = max(body_line_lengths)
+
+    if header_file_path:
+        headers = handle_header(header_file_path=header_file_path,
+                                delimiter=delimiter)
+        line_lengths['header'] = len(headers)
     else:
-        return True
+        line_lengths['header'] = len(data[0])
+
+    return line_lengths['header'] >= line_lengths['body']
 
 
 def convert_excel_to_csv(file_path):
-
     new_file_path = file_path.split('.')[0] + '_processed.csv'
     data = _primitive_read_excel(file_path=file_path)
 
@@ -150,35 +167,35 @@ def _primitive_read_excel(file_path):
         File name or path.
     """
 
-    data = []
+    data = list()
     worksheet = xlrd.open_workbook(file_path).sheet_by_index(0)
 
     for row in worksheet.get_rows():
         processed_row = list()
         for cell in row:
-            if not xlrd.sheet.ctype_text[cell.ctype] == 'empty':
-                processed_row.append(unicode(cell.value))
-                continue
+            processed_row.append(unicode(cell.value))
         data.append(processed_row)
 
     return data
 
 
 def main(file_path='',
-         is_excel='',
+         is_excel=None,
          raw_delimiter='',
-         if_header='',
+         has_header=None,
          header_file_path=''):
 
     validation_results = ValidationResults()
 
-    # 1. ask user the file path
+    # Ask for the file path.
     file_path = file_path or raw_input('Please specify the full path to this data file: ')
 
-    # Ask the user if it is a XLS or XLSX file.
-    is_excel = is_excel or raw_input('Is this an Excel file?  Y / n: ')
+    # Ask if it is an XLS / XLSX file.
+    is_excel = (is_excel
+                if is_excel is not None
+                else raw_input('Is this an Excel file?  Y / n: ').lower() == 'y')
 
-    if is_excel.lower() == 'y':
+    if is_excel:
         excel_file_path = convert_excel_to_csv(file_path=file_path)
         # Redefine the existing file_path variable so the Excel file,
         # which has now been converted to CSV, can move through the
@@ -186,73 +203,81 @@ def main(file_path='',
         file_path = excel_file_path
         real_delimiter = ','
 
-        # 2. print the first couple of lines to determine delimiter
-        # TODO (duyn): bonus points if anyone figures out how to refactor this
-        with open(file_path) as myfile:
-            sample_1 = [next(myfile) for x in xrange(2)]
-        print sample_1
+        # Display the first couple of lines so the user can identify
+        # the delimiter.
+        # TODO (duyn): There will be bonus points for whoever can refactor this duplicated code.
+        with open(file_path) as file:
+            head = [next(file) for x in xrange(2)]
+        print head
     else:
-        with open(file_path) as myfile:
-            sample_1 = [next(myfile) for x in xrange(2)]
-        print sample_1
+        with open(file_path) as file:
+            head = [next(file) for x in xrange(2)]
+        print head
 
-        # 3. ask user for the delimiter
+        # Ask for the delimiter.
         delimiter_mapping = {
-                1: ',',
-                2: '\t',
-                3: '|',
-                4: ';',
-                5: ' ',
-                6: '-'
-            }
+            1: ',',
+            2: '\t',
+            3: '|',
+            4: ';',
+            5: ' ',
+            6: '-'
+        }
 
         while True:
             raw_delimiter = raw_delimiter or raw_input(
-            """According to the printed text, please enter the delimiter used in this file:
-
-            Type 1 for comma (,)
-            Type 2 for tab (   )
-            Type 3 for pipe character (|)
-            Type 4 for semicolon (;)
-            Type 5 for space ( )
-            Type 6 for hyphen (-)
-            """
+                """According to the printed text, please enter the delimiter used in this file:
+                Type 1 for comma (,)
+                Type 2 for tab (   )
+                Type 3 for pipe character (|)
+                Type 4 for semicolon (;)
+                Type 5 for space ( )
+                Type 6 for hyphen (-)
+                """
             )
             try:
                 real_delimiter = delimiter_mapping[int(raw_delimiter)]
                 break
             except (ValueError, KeyError):
-                print 'That is not a valid delimiter.  Please try again.'
+                print 'That is not a valid delimiter. Please try again.'
             except KeyboardInterrupt:
                 break
 
-    # 4. ask user if file contains header, and if necessary, append one
     while True:
-        header_mapping = {
-            1: 'Yes',
-            2: 'No'
-        }
-
-        if_header = if_header or raw_input(
-        """According to the printed text, does this file contain a header row?
-
-        Type 1 for Yes
-        Type 2 for No
-        """
-        )
+        # Ask if a header exists.
+        has_header = (has_header
+                      if has_header is not None
+                      else raw_input('Does this file have a header?  Y / n: ').lower() == 'y')
 
         try:
-            if header_mapping[int(if_header)] == 'Yes':
+            if has_header:
+                if is_excel:
+                    # Replace the existing header with a processed one.
+                    with open(file_path) as file:
+                        data = [record for record in csv.reader(file)]
+                    header = data[0]
+
+                    processed_header = list()
+                    for field in header:
+                        if field != '':
+                            processed_header.append(field)
+                        else:
+                            break
+
+                    data[0] = processed_header
+                    with open(file_path, 'wb') as file:
+                        csv.writer(file).writerows(data)
                 if is_not_skewed(file_path=file_path, delimiter=real_delimiter):
                     data_frame = pd.read_table(file_path, sep=real_delimiter)
                     validation_results.is_skewed = False
                     print 'This file is not skewed. Awesome.'
                 else:
                     raise SkewedDataError
-                # print 'This file has a header and is not skewed.  Please proceed to the next test.'
             else:
-                print 'This file does not have a header.  Please append one.'
-                header_file_path = header_file_path or raw_input('Please specify the full path to this headers file: ')
+                print 'This file does not have a header. Please append one.'
+                header_file_path = header_file_path or raw_input(
+                    """Please specify the full path to the headers file (It """
+                    """must be formatted as a CSV): """)
 
                 # Read in the header.
                 with open(header_file_path, 'rb') as file:
@@ -275,29 +300,27 @@ def main(file_path='',
                     print message
                 else:
                     raise SkewedDataError
-
-            # 6- print all column headers in returned data_frame and if the
-            # number of unique values is <= 20, print all unique values
+            # Display the fields labels along with the corresponding
+            # unique field values.
             print_headers(data_frame)
             break
-        # 5- if file is skewed, catch the CParserError, print the Excel
-        # line # of the skewed line in addition to the skewed line and the
-        # two surrounding lines
+        # Catch the SkewedDataError and display the skewed line along
+        # with some context.
         except SkewedDataError:
-            print 'Failure.  This file is skewed.'
-            if header_mapping[int(if_header)] == 'Yes':
+            print 'Failure. This file is skewed.'
+            if has_header:
                 with open(file_path, 'rb') as file:
-                    print_skewedness(file=file, delimiter=real_delimiter)
+                    print_skewness(file=file, delimiter=real_delimiter)
             else:
                 with open(file_path_returned, 'rb') as file:
-                    print_skewedness(file=file, delimiter=real_delimiter)
+                    print_skewness(file=file, delimiter=real_delimiter)
             break
         except (KeyError, ValueError):
-            print 'That is not a valid response.  Please try again.'
+            print 'That is not a valid response. Please try again.'
 
-    # If it is an XLS or XLSX file, delete the temporary file.  Only in
-    # cases where the header is appended should the processed file be
-    # returned.
+        # If it is an XLS or XLSX file, delete the temporary file. Only
+        # in cases where the header is appended should the processed
+        # file be returned.
 
     validation_results.validate()
 
