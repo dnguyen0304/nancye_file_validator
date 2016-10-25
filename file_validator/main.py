@@ -73,10 +73,10 @@ def is_not_skewed(file_path, delimiter, header_file_path=None):
     """
 
     # NOTE (nancye): Sets are similar to lists except sets contain only
-    #   unique values. In addition, instead of using the .append(), you
-    #   use the .add().
+    #   unique values. In addition, instead of using .append(), you use
+    #   .add().
     line_lengths = dict()
-    data = []
+    data = list()
     body_line_lengths = set()
 
     # NOTE (nancye): open() returns a file object.
@@ -121,7 +121,7 @@ def _primitive_read_excel(file_path):
         File name or path.
     """
 
-    data = []
+    data = list()
     worksheet = xlrd.open_workbook(file_path).sheet_by_index(0)
 
     for row in worksheet.get_rows():
@@ -152,12 +152,12 @@ if __name__ == '__main__':
         # the delimiter.
         # TODO (duyn): There will be bonus points for whoever can refactor this duplicated code.
         with open(file_path) as file:
-            sample_1 = [next(file) for x in xrange(2)]
-        print sample_1
+            head = [next(file) for x in xrange(2)]
+        print head
     else:
         with open(file_path) as file:
-            sample_1 = [next(file) for x in xrange(2)]
-        print sample_1
+            head = [next(file) for x in xrange(2)]
+        print head
 
         # Ask for the delimiter.
         delimiter_mapping = {
@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 real_delimiter = delimiter_mapping[int(raw_delimiter)]
                 break
             except (ValueError, KeyError):
-                print 'That is not a valid delimiter.  Please try again.'
+                print 'That is not a valid delimiter. Please try again.'
             except KeyboardInterrupt:
                 break
 
@@ -242,7 +242,6 @@ if __name__ == '__main__':
                     print message
                 else:
                     raise SkewedDataError
-
             # Display the fields labels along with the corresponding
             # unique field values.
             print_headers(data_frame)
