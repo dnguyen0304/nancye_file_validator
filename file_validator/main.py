@@ -97,6 +97,7 @@ def print_headers(data_frame):
         print ''
 
 
+# TODO (duyn): Isolate the filesystem I/O to simplify testing.
 def is_not_skewed(file_path, delimiter, header_file_path=None):
 
     """
@@ -145,6 +146,20 @@ def is_not_skewed(file_path, delimiter, header_file_path=None):
 
 
 def convert_excel_to_csv(file_path):
+
+    """
+    Returns String.
+
+    Read an XLS or XLSX file and write it formatted as a CSV.
+
+    The destination file path is qualified with "_processed".
+
+    Parameters
+    ----------
+    file_path : String
+        File name or path.
+    """
+
     new_file_path = file_path.split('.')[0] + '_processed.csv'
     data = _primitive_read_excel(file_path=file_path)
 
