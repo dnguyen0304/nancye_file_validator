@@ -3,7 +3,10 @@
 import csv
 import os
 
-from nose.tools import assert_equal, assert_list_equal
+from nose.tools import (assert_equal,
+                        assert_false,
+                        assert_list_equal,
+                        raises)
 
 from .. import main
 
@@ -114,6 +117,28 @@ def test_smart_float_coerce():
     output_data = _smart_float_coerce(data=input_data)
 
     assert_equal(output_data, expected_data)
+
+
+@raises(AssertionError)
+def test_validation_result_unset():
+
+    validation_results = main.ValidationResults()
+    validation_results.validate()
+
+
+def test_base():
+
+    file_path = data_directory + '/' + 'students.csv'
+    is_excel = False
+    raw_delimiter = '1'
+    has_header = True
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   raw_delimiter=raw_delimiter,
+                                   has_header=has_header)
+
+    assert_false(validation_results.is_skewed)
 
 
 def test_primitive_read_excel():

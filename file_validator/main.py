@@ -5,6 +5,7 @@ import csv
 
 import pandas as pd
 import xlrd
+from nose.tools import assert_is_not_none
 
 
 # Classes
@@ -12,6 +13,50 @@ import xlrd
 # NOTE (nancye): This is how to define a custom exception.
 class SkewedDataError(Exception):
     pass
+
+
+class ValidationResults(object):
+
+    def __init__(self, is_skewed=None):
+
+        # To track a new validation result:
+        #   1. Add it as a new parameter to __init__()'s call signature.
+        #   2. Set its default value to None.
+        #   3. Set an instance attribute by the same name within
+        #      __init__().
+        #
+        # For example:
+        #     # before
+        #     def __init__(self):
+        #         pass
+        #
+        #     # after
+        #     def __init__(self, is_foo=None):
+        #         self.is_foo = is_foo
+
+        self.is_skewed = is_skewed
+
+    def validate(self):
+
+        """
+        Returns None.
+
+        Assert that all public attributes are not None.
+
+        Raises
+        ------
+        AssertionError
+        """
+
+        message = 'The validation result for "{result}" was not set.'
+
+        results = [attribute
+                   for attribute in dir(self)
+                   if not attribute.startswith('_') and attribute != 'validate']
+
+        for result in results:
+            assert_is_not_none(getattr(self, result),
+                               msg=message.format(result=result))
 
 
 # Functions
@@ -29,8 +74,8 @@ def handle_file_path(file_path):
     return file_path_returned
 
 
-def print_skewness(file):
-    data = [record for record in csv.reader(file, delimiter=real_delimiter)]
+def print_skewness(file, delimiter):
+    data = [record for record in csv.reader(file, delimiter=delimiter)]
     for row in data:
         if len(row) != len(data[0]):
             print data[0]
@@ -149,12 +194,21 @@ def _primitive_read_excel(file_path):
     return data
 
 
-if __name__ == '__main__':
+def main(file_path='',
+         is_excel=None,
+         raw_delimiter='',
+         has_header=None,
+         header_file_path=''):
+
+    validation_results = ValidationResults()
+
     # Ask for the file path.
-    file_path = raw_input('Please specify the full path to this data file: ')
+    file_path = file_path or raw_input('Please specify the full path to this data file: ')
 
     # Ask if it is an XLS / XLSX file.
-    is_excel = raw_input('Is this an Excel file?  Y / n: ').lower() == 'y'
+    is_excel = (is_excel
+                if is_excel is not None
+                else raw_input('Is this an Excel file?  Y / n: ').lower() == 'y')
 
     if is_excel:
         excel_file_path = convert_excel_to_csv(file_path=file_path)
@@ -186,7 +240,7 @@ if __name__ == '__main__':
         }
 
         while True:
-            raw_delimiter = raw_input(
+            raw_delimiter = raw_delimiter or raw_input(
                 """According to the printed text, please enter the delimiter used in this file:
                 Type 1 for comma (,)
                 Type 2 for tab (   )
@@ -206,7 +260,9 @@ if __name__ == '__main__':
 
     while True:
         # Ask if a header exists.
-        has_header = raw_input('Does this file have a header?  Y / n: ').lower() == 'y'
+        has_header = (has_header
+                      if has_header is not None
+                      else raw_input('Does this file have a header?  Y / n: ').lower() == 'y')
 
         try:
             if has_header:
@@ -228,12 +284,13 @@ if __name__ == '__main__':
                         csv.writer(file).writerows(data)
                 if is_not_skewed(file_path=file_path, delimiter=real_delimiter):
                     data_frame = pd.read_table(file_path, sep=real_delimiter)
+                    validation_results.is_skewed = False
                     print 'This file is not skewed. Awesome.'
                 else:
                     raise SkewedDataError
             else:
                 print 'This file does not have a header. Please append one.'
-                header_file_path = raw_input(
+                header_file_path = header_file_path or raw_input(
                     """Please specify the full path to the headers file (It """
                     """must be formatted as a CSV): """)
 
@@ -268,10 +325,10 @@ if __name__ == '__main__':
             print 'Failure. This file is skewed.'
             if has_header:
                 with open(file_path, 'rb') as file:
-                    print_skewness(file)
+                    print_skewness(file=file, delimiter=real_delimiter)
             else:
                 with open(file_path_returned, 'rb') as file:
-                    print_skewness(file)
+                    print_skewness(file=file, delimiter=real_delimiter)
             break
         except (KeyError, ValueError):
             print 'That is not a valid response. Please try again.'
@@ -279,4 +336,12 @@ if __name__ == '__main__':
         # If it is an XLS or XLSX file, delete the temporary file. Only
         # in cases where the header is appended should the processed
         # file be returned.
+
+    validation_results.validate()
+
+    return validation_results
+
+
+if __name__ == '__main__':
+    main()
 
