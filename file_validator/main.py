@@ -17,7 +17,7 @@ class SkewedDataError(Exception):
 
 class ValidationResults(object):
 
-    def __init__(self, is_skewed=None):
+    def __init__(self, has_header=None, is_skewed=None):
 
         # To track a new validation result:
         #   1. Add it as a new parameter to __init__()'s call signature.
@@ -34,6 +34,7 @@ class ValidationResults(object):
         #     def __init__(self, is_foo=None):
         #         self.is_foo = is_foo
 
+        self.has_header = has_header
         self.is_skewed = is_skewed
 
     def validate(self):
