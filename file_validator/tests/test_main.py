@@ -126,7 +126,7 @@ def test_validation_result_unset():
     validation_results.validate()
 
 
-def test_base():
+def test_csv():
 
     file_path = data_directory + '/' + 'students.csv'
     is_excel = False
