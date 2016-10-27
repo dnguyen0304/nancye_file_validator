@@ -3,6 +3,7 @@
 import csv
 import os
 
+import pandas as pd
 from nose.tools import (assert_equal,
                         assert_false,
                         assert_list_equal,
@@ -118,6 +119,17 @@ def test_smart_float_coerce():
     output_data = _smart_float_coerce(data=input_data)
 
     assert_equal(output_data, expected_data)
+
+
+def test_data_table_from_data_frame():
+
+    data_frame = pd.DataFrame({'foo': ['eggs', 'ham'], 'bar': ['0', '1']})
+    expected_data_table = main.DataTable([['foo', 'bar'],
+                                          ['eggs', '0'],
+                                          ['ham', '1']])
+    output_data_table = main.DataTable.from_data_frame(data_frame)
+
+    assert_list_equal(output_data_table, expected_data_table)
 
 
 @raises(AssertionError)

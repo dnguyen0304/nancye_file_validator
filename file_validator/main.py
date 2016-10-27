@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import StringIO
 import csv
 
 import pandas as pd
@@ -15,9 +16,29 @@ class SkewedDataError(Exception):
     pass
 
 
+class DataTable(list):
+
+    @classmethod
+    def from_data_frame(cls, data_frame):
+
+        """
+        Returns DataTable.
+
+        Alternate constructor when converting from pandas' data frames.
+
+        Parameters
+        ----------
+        data_frame : pandas.DataFrame
+        """
+
+        file = StringIO.StringIO(data_frame.to_csv(index=False))
+        data = [record for record in csv.reader(file)]
+        return DataTable(data)
+
+
 class ValidationResults(object):
 
-    def __init__(self, is_skewed=None):
+    def __init__(self, processed_data_table=None, is_skewed=None):
 
         # To track a new validation result:
         #   1. Add it as a new parameter to __init__()'s call signature.
@@ -34,6 +55,7 @@ class ValidationResults(object):
         #     def __init__(self, is_foo=None):
         #         self.is_foo = is_foo
 
+        self.processed_data_table = processed_data_table
         self.is_skewed = is_skewed
 
     def validate(self):
