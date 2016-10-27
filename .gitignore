@@ -93,3 +93,4 @@ ENV/
 
 # Processed dummy data files
 data/*processed*
+data/*with-header*
