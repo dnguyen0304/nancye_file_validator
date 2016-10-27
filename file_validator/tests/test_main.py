@@ -6,6 +6,7 @@ import os
 from nose.tools import (assert_equal,
                         assert_false,
                         assert_list_equal,
+                        assert_true,
                         raises)
 
 from .. import main
@@ -139,6 +140,21 @@ def test_csv():
                                    has_header=has_header)
 
     assert_false(validation_results.is_skewed)
+
+
+def test_csv_skewed():
+
+    file_path = data_directory + '/' + 'students-skewed.csv'
+    is_excel = False
+    raw_delimiter = '1'
+    has_header = True
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   raw_delimiter=raw_delimiter,
+                                   has_header=has_header)
+
+    assert_true(validation_results.is_skewed)
 
 
 def test_primitive_read_excel():

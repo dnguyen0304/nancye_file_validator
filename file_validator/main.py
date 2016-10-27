@@ -289,6 +289,7 @@ def main(file_path='',
                     validation_results.is_skewed = False
                     print 'This file is not skewed. Awesome.'
                 else:
+                    validation_results.is_skewed = True
                     raise SkewedDataError
             else:
                 validation_results.has_header = False
@@ -318,6 +319,7 @@ def main(file_path='',
                                """has been returned to you for further testing.""")
                     print message
                 else:
+                    validation_results.is_skewed = True
                     raise SkewedDataError
             # Display the fields labels along with the corresponding
             # unique field values.
