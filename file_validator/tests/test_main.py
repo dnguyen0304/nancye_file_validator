@@ -141,18 +141,6 @@ def test_data_table_from_delimited_buffer():
     assert_list_equal(output_data_table, expected_data_table)
 
 
-def test_data_table_from_data_frame():
-
-    data_frame = pd.DataFrame.from_items([('foo', ('eggs', 'ham')),
-                                          ('bar', ('0', '1'))])
-    expected_data_table = main.DataTable([['foo', 'bar'],
-                                          ['eggs', '0'],
-                                          ['ham', '1']])
-    output_data_table = main.DataTable.from_data_frame(data_frame)
-
-    assert_list_equal(output_data_table, expected_data_table)
-
-
 @raises(AssertionError)
 def test_validation_result_unset():
 

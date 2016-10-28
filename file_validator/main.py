@@ -74,9 +74,8 @@ class DataTable(list):
         data_frame : pandas.DataFrame
         """
 
-        file = StringIO.StringIO(data_frame.to_csv(index=False))
-        data = [record for record in csv.reader(file)]
-        return DataTable(data)
+        buffer = data_frame.to_csv(index=False)
+        return DataTable.from_delimited_buffer(buffer=buffer, delimiter=',')
 
 
 class ValidationResults(object):
