@@ -288,7 +288,6 @@ def main(file_path='',
 
         try:
             if has_header:
-                validation_results.has_header = True
                 if is_excel:
                     # Replace the existing header with a processed one.
                     with open(file_path) as file:
@@ -317,7 +316,6 @@ def main(file_path='',
                     validation_results.is_skewed = True
                     raise SkewedDataError
             else:
-                validation_results.has_header = False
                 print 'This file does not have a header. Please append one.'
                 header_file_path = header_file_path or raw_input(
                     """Please specify the full path to the headers file (It """
