@@ -336,8 +336,8 @@ def main(file_path='',
                 if is_not_skewed(file_path=file_path, delimiter=real_delimiter):
                     data_frame = pd.read_table(file_path, sep=real_delimiter)
 
-                    processed_data_table = DataTable.from_data_frame(data_frame)
-                    validation_results.processed_data_table = processed_data_table
+                    source_data_table = DataTable.from_data_frame(data_frame)
+                    validation_results.source_data_table = source_data_table
                     validation_results.is_skewed = False
 
                     print 'This file is not skewed. Awesome.'
