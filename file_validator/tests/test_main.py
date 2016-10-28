@@ -106,7 +106,7 @@ def test_drop_trailing_missing_data():
     expected_data = [['foo', 'bar'], ['eggs', 'ham']]
     output_data = _drop_trailing_missing_data(data=input_data)
 
-    assert_equal(output_data, expected_data)
+    assert_list_equal(output_data, expected_data)
 
 
 def test_drop_trailing_missing_data_stateless():
@@ -124,7 +124,7 @@ def test_smart_float_coerce():
     expected_data = [['foo', 0.0], ['', 1.0]]
     output_data = _smart_float_coerce(data=input_data)
 
-    assert_equal(output_data, expected_data)
+    assert_list_equal(output_data, expected_data)
 
 
 def test_data_table_from_data_frame():
