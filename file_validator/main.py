@@ -31,7 +31,7 @@ def handle_file_path(file_path):
 def print_skewness(file):
     data = [record for record in csv.reader(file, delimiter=real_delimiter)]
     for row in data:
-        if len(row) != len(data[0]):
+        if len(row) > len(data[0]):
             print data[0]
             skewed_line_number = data.index(row) + 1
             one_before = data.index(row) - 1
@@ -114,7 +114,7 @@ def convert_excel_to_csv(file_path):
         File name or path.
     """
 
-    new_file_path = file_path.split('.')[0] + '_processed.csv'
+    new_file_path = file_path.split('.')[0] + '_converted.csv'
     data = _primitive_read_excel(file_path=file_path)
 
     with open(new_file_path, 'wb') as file:
