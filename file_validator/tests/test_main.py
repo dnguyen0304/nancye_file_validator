@@ -256,6 +256,44 @@ def test_tab_delimited_missing_header():
                       expected_data_frame)
 
 
+def test_excel():
+
+    validation_results = setup_test_excel()
+    assert_false(validation_results.is_skewed)
+
+
+def setup_test_excel():
+
+    file_path = data_directory + '/' + 'students.xlsx'
+    is_excel = True
+    has_header = True
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   has_header=has_header)
+
+    return validation_results
+
+
+def test_excel_missing_header():
+
+    file_path = data_directory + '/' + 'students-missing-header.xlsx'
+    is_excel = True
+    has_header = False
+    header_file_path = data_directory + '/' + 'head.csv'
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   has_header=has_header,
+                                   header_file_path=header_file_path)
+
+    assert_false(validation_results.is_skewed)
+
+    expected_data_frame = setup_test_excel().source_data_table
+    assert_data_equal(validation_results.processed_data_table,
+                      expected_data_frame)
+
+
 def test_primitive_read_excel():
 
     _test_primitive_read_excel_helper(left='students.xlsx',
