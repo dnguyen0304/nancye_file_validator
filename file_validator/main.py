@@ -3,6 +3,7 @@
 
 import StringIO
 import csv
+import warnings
 
 import pandas as pd
 import xlrd
@@ -77,8 +78,11 @@ class ValidationResults(object):
                    if not attribute.startswith('_') and attribute != 'validate']
 
         for result in results:
-            assert_is_not_none(getattr(self, result),
-                               msg=message.format(result=result))
+            if result == 'processed_data_table':
+                warnings.warn(message.format(result=result))
+            else:
+                assert_is_not_none(getattr(self, result),
+                                   msg=message.format(result=result))
 
 
 # Functions
