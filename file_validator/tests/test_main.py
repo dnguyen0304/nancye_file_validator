@@ -127,6 +127,21 @@ def test_smart_float_coerce():
     assert_list_equal(output_data, expected_data)
 
 
+def test_data_table_from_delimited_buffer():
+
+    buffer = 'foo,bar\neggs,0\nham,1'
+    delimiter = ','
+
+    expected_data_table = main.DataTable([['foo', 'bar'],
+                                          ['eggs', '0'],
+                                          ['ham', '1']])
+    output_data_table = main.DataTable.from_delimited_buffer(
+        buffer,
+        delimiter=delimiter)
+
+    assert_list_equal(output_data_table, expected_data_table)
+
+
 def test_data_table_from_data_frame():
 
     data_frame = pd.DataFrame.from_items([('foo', ('eggs', 'ham')),
