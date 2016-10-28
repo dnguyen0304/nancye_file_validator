@@ -5,8 +5,7 @@ import csv
 import os
 
 import pandas as pd
-from nose.tools import (assert_equal,
-                        assert_false,
+from nose.tools import (assert_false,
                         assert_list_equal,
                         assert_true,
                         raises)
