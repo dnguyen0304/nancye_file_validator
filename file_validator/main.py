@@ -41,6 +41,27 @@ class DataTable(list):
         return DataTable(data)
 
     @classmethod
+    def from_delimited_buffer(cls, buffer, delimiter):
+
+        """
+        Returns DataTable.
+
+        Alternate constructor when converting from string buffers with
+        delimited data.
+
+        Parameters
+        ----------
+        buffer : String
+            String buffer.
+        delimiter : String
+            Character defining the boundary between record values.
+        """
+
+        file = StringIO.StringIO(buffer)
+        data = [record for record in csv.reader(file, delimiter=delimiter)]
+        return DataTable(data)
+
+    @classmethod
     def from_data_frame(cls, data_frame):
 
         """
