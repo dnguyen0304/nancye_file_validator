@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import copy
 import csv
 import os
 
@@ -61,15 +62,11 @@ def _drop_trailing_missing_data(data):
     data : Iterable
     """
 
-    processed_data = list()
+    processed_data = copy.deepcopy(data)
 
-    for record in data:
-        for value in reversed(record):
-            if value == '':
-                record.pop()
-            else:
-                break
-        processed_data.append(record)
+    for record in processed_data:
+        while record[-1] == '':
+            record.pop()
 
     return processed_data
 
