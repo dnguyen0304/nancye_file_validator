@@ -387,6 +387,15 @@ def main(file_path='',
                 with open(file_path_returned, 'wb') as file:
                     file.writelines([header, body])
 
+                source_data_table = DataTable.from_delimited_buffer(
+                    buffer=body,
+                    delimiter=real_delimiter)
+                processed_data_table = DataTable.from_delimited_buffer(
+                    buffer=header + body,
+                    delimiter=real_delimiter)
+                validation_results.source_data_table = source_data_table
+                validation_results.processed_data_table = processed_data_table
+
                 if is_not_skewed(file_path=file_path,
                                  delimiter=real_delimiter,
                                  header_file_path=header_file_path):

@@ -142,6 +142,12 @@ def test_validation_result_unset():
 
 def test_csv():
 
+    validation_results = setup_test_csv()
+    assert_false(validation_results.is_skewed)
+
+
+def setup_test_csv():
+
     file_path = data_directory + '/' + 'students.csv'
     is_excel = False
     raw_delimiter = '1'
@@ -152,7 +158,28 @@ def test_csv():
                                    raw_delimiter=raw_delimiter,
                                    has_header=has_header)
 
+    return validation_results
+
+
+def test_csv_missing_header():
+
+    file_path = data_directory + '/' + 'students-missing-header.csv'
+    is_excel = False
+    raw_delimiter = '1'
+    has_header = False
+    header_file_path = data_directory + '/' + 'head.csv'
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   raw_delimiter=raw_delimiter,
+                                   has_header=has_header,
+                                   header_file_path=header_file_path)
+
     assert_false(validation_results.is_skewed)
+
+    expected_data_frame = setup_test_csv().source_data_table
+    assert_data_equal(validation_results.processed_data_table,
+                      expected_data_frame)
 
 
 def test_csv_skewed():
