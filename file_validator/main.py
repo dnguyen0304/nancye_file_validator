@@ -36,9 +36,9 @@ class DataTable(list):
             Character defining the boundary between record values.
         """
 
-        with open(file_path, 'rb') as file:
-            data = [record for record in csv.reader(file, delimiter=delimiter)]
-        return DataTable(data)
+        buffer = open(file_path, 'rb').read()
+        return DataTable.from_delimited_buffer(buffer=buffer,
+                                               delimiter=delimiter)
 
     @classmethod
     def from_delimited_buffer(cls, buffer, delimiter):
