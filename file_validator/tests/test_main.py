@@ -214,6 +214,48 @@ def test_csv_missing_header_skewed():
     assert_true(validation_results.is_skewed)
 
 
+def test_tab_delimited():
+
+    validation_results = setup_test_tab_delimited()
+    assert_false(validation_results.is_skewed)
+
+
+def setup_test_tab_delimited():
+
+    file_path = data_directory + '/' + 'students.txt'
+    is_excel = False
+    raw_delimiter = '2'
+    has_header = True
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   raw_delimiter=raw_delimiter,
+                                   has_header=has_header)
+
+    return validation_results
+
+
+def test_tab_delimited_missing_header():
+
+    file_path = data_directory + '/' + 'students-missing-header.txt'
+    is_excel = False
+    raw_delimiter = '2'
+    has_header = False
+    header_file_path = data_directory + '/' + 'head.txt'
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   raw_delimiter=raw_delimiter,
+                                   has_header=has_header,
+                                   header_file_path=header_file_path)
+
+    assert_false(validation_results.is_skewed)
+
+    expected_data_frame = setup_test_tab_delimited().source_data_table
+    assert_data_equal(validation_results.processed_data_table,
+                      expected_data_frame)
+
+
 def test_primitive_read_excel():
 
     _test_primitive_read_excel_helper(left='students.xlsx',
