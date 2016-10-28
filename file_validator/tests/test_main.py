@@ -294,6 +294,34 @@ def test_excel_missing_header():
                       expected_data_frame)
 
 
+def test_excel_skewed():
+
+    file_path = data_directory + '/' + 'students-skewed.xlsx'
+    is_excel = True
+    has_header = True
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   has_header=has_header)
+
+    assert_true(validation_results.is_skewed)
+
+
+def test_excel_missing_header_skewed():
+
+    file_path = data_directory + '/' + 'students-missing-header-skewed.xlsx'
+    is_excel = True
+    has_header = False
+    header_file_path = data_directory + '/' + 'head.csv'
+
+    validation_results = main.main(file_path=file_path,
+                                   is_excel=is_excel,
+                                   has_header=has_header,
+                                   header_file_path=header_file_path)
+
+    assert_true(validation_results.is_skewed)
+
+
 def test_primitive_read_excel():
 
     _test_primitive_read_excel_helper(left='students.xlsx',

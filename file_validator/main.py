@@ -149,7 +149,9 @@ def handle_file_path(file_path):
 def print_skewness(file, delimiter):
     data = [record for record in csv.reader(file, delimiter=delimiter)]
     for row in data:
-        if len(row) != len(data[0]):
+        while row[-1] == '':
+            row.pop()
+        if len(row) > len(data[0]):
             print data[0]
             skewed_line_number = data.index(row) + 1
             one_before = data.index(row) - 1
