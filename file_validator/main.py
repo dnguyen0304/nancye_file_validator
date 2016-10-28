@@ -20,6 +20,27 @@ class SkewedDataError(Exception):
 class DataTable(list):
 
     @classmethod
+    def from_delimited(cls, file_path, delimiter):
+
+        """
+        Returns DataTable.
+
+        Alternate constructor when converting from text files with
+        delimited data.
+
+        Parameters
+        ----------
+        file_path : String
+            File name or path.
+        delimiter : String
+            Character defining the boundary between record values.
+        """
+
+        with open(file_path, 'rb') as file:
+            data = [record for record in csv.reader(file, delimiter=delimiter)]
+        return DataTable(data)
+
+    @classmethod
     def from_data_frame(cls, data_frame):
 
         """
@@ -39,7 +60,10 @@ class DataTable(list):
 
 class ValidationResults(object):
 
-    def __init__(self, processed_data_table=None, is_skewed=None):
+    def __init__(self,
+                 source_data_table=None,
+                 processed_data_table=None,
+                 is_skewed=None):
 
         # To track a new validation result:
         #   1. Add it as a new parameter to __init__()'s call signature.
@@ -56,6 +80,7 @@ class ValidationResults(object):
         #     def __init__(self, is_foo=None):
         #         self.is_foo = is_foo
 
+        self.source_data_table = source_data_table
         self.processed_data_table = processed_data_table
         self.is_skewed = is_skewed
 
