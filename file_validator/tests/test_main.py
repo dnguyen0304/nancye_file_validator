@@ -101,27 +101,27 @@ def _smart_float_coerce(data):
 
 def test_drop_trailing_missing_data():
 
-    input_data = [['foo', 'bar', ''], ['eggs', 'ham', '']]
+    data = [['foo', 'bar', ''], ['eggs', 'ham', '']]
     expected_data = [['foo', 'bar'], ['eggs', 'ham']]
-    output_data = _drop_trailing_missing_data(data=input_data)
+    output_data = _drop_trailing_missing_data(data=data)
 
     assert_list_equal(output_data, expected_data)
 
 
 def test_drop_trailing_missing_data_stateless():
 
-    input_data = [['foo', 'bar', ''], ['eggs', 'ham', '']]
+    data = [['foo', 'bar', ''], ['eggs', 'ham', '']]
     expected_data = [['foo', 'bar', ''], ['eggs', 'ham', '']]
-    _drop_trailing_missing_data(data=input_data)
+    _drop_trailing_missing_data(data=data)
 
-    assert_list_equal(input_data, expected_data)
+    assert_list_equal(data, expected_data)
 
 
 def test_smart_float_coerce():
 
-    input_data = [['foo', '0'], ['', '1']]
+    data = [['foo', '0'], ['', '1']]
     expected_data = [['foo', 0.0], ['', 1.0]]
-    output_data = _smart_float_coerce(data=input_data)
+    output_data = _smart_float_coerce(data=data)
 
     assert_list_equal(output_data, expected_data)
 
