@@ -342,6 +342,10 @@ def main(file_path='',
 
                     print 'This file is not skewed. Awesome.'
                 else:
+                    source_data_table = DataTable.from_delimited(
+                        file_path=file_path,
+                        delimiter=real_delimiter)
+                    validation_results.source_data_table = source_data_table
                     validation_results.is_skewed = True
                     raise SkewedDataError
             else:
