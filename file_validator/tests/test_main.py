@@ -3,6 +3,7 @@
 import copy
 import csv
 import os
+import warnings
 
 import pandas as pd
 from nose.tools import (assert_false,
@@ -146,6 +147,16 @@ def test_validation_result_unset():
 
     validation_results = main.ValidationResults()
     validation_results.validate()
+
+
+def test_validation_result_warning():
+
+    validation_results = main.ValidationResults(source_data_table='foo',
+                                                is_skewed='foo')
+
+    with warnings.catch_warnings(record=True) as warnings_:
+        validation_results.validate()
+        assert_true('processed_data_table' in str(warnings_[0].message))
 
 
 def test_csv():
