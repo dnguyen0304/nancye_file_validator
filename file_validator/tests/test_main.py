@@ -5,7 +5,6 @@ import csv
 import os
 import warnings
 
-import pandas as pd
 from nose.tools import (assert_false,
                         assert_list_equal,
                         assert_true,
