@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import StringIO
 import csv
+import warnings
 
 import pandas as pd
 import xlrd
@@ -15,9 +17,73 @@ class SkewedDataError(Exception):
     pass
 
 
+class DataTable(list):
+
+    @classmethod
+    def from_delimited(cls, file_path, delimiter):
+
+        """
+        Returns DataTable.
+
+        Alternate constructor when converting from text files with
+        delimited data.
+
+        Parameters
+        ----------
+        file_path : String
+            File name or path.
+        delimiter : String
+            Character defining the boundary between record values.
+        """
+
+        buffer = open(file_path, 'rb').read()
+        return DataTable.from_delimited_buffer(buffer=buffer,
+                                               delimiter=delimiter)
+
+    @classmethod
+    def from_delimited_buffer(cls, buffer, delimiter):
+
+        """
+        Returns DataTable.
+
+        Alternate constructor when converting from string buffers with
+        delimited data.
+
+        Parameters
+        ----------
+        buffer : String
+            String buffer.
+        delimiter : String
+            Character defining the boundary between record values.
+        """
+
+        file = StringIO.StringIO(buffer)
+        data = [record for record in csv.reader(file, delimiter=delimiter)]
+        return DataTable(data)
+
+    @classmethod
+    def from_data_frame(cls, data_frame):
+
+        """
+        Returns DataTable.
+
+        Alternate constructor when converting from pandas' data frames.
+
+        Parameters
+        ----------
+        data_frame : pandas.DataFrame
+        """
+
+        buffer = data_frame.to_csv(index=False)
+        return DataTable.from_delimited_buffer(buffer=buffer, delimiter=',')
+
+
 class ValidationResults(object):
 
-    def __init__(self, is_skewed=None):
+    def __init__(self,
+                 source_data_table=None,
+                 processed_data_table=None,
+                 is_skewed=None):
 
         # To track a new validation result:
         #   1. Add it as a new parameter to __init__()'s call signature.
@@ -34,6 +100,8 @@ class ValidationResults(object):
         #     def __init__(self, is_foo=None):
         #         self.is_foo = is_foo
 
+        self.source_data_table = source_data_table
+        self.processed_data_table = processed_data_table
         self.is_skewed = is_skewed
 
     def validate(self):
@@ -55,8 +123,11 @@ class ValidationResults(object):
                    if not attribute.startswith('_') and attribute != 'validate']
 
         for result in results:
-            assert_is_not_none(getattr(self, result),
-                               msg=message.format(result=result))
+            if result == 'processed_data_table':
+                warnings.warn(message.format(result=result))
+            else:
+                assert_is_not_none(getattr(self, result),
+                                   msg=message.format(result=result))
 
 
 # Functions
@@ -77,6 +148,8 @@ def handle_file_path(file_path):
 def print_skewness(file, delimiter):
     data = [record for record in csv.reader(file, delimiter=delimiter)]
     for row in data:
+        while row[-1] == '':
+            row.pop()
         if len(row) > len(data[0]):
             print data[0]
             skewed_line_number = data.index(row) + 1
@@ -284,9 +357,18 @@ def main(file_path='',
                         csv.writer(file).writerows(data)
                 if is_not_skewed(file_path=file_path, delimiter=real_delimiter):
                     data_frame = pd.read_table(file_path, sep=real_delimiter)
+
+                    source_data_table = DataTable.from_data_frame(data_frame)
+                    validation_results.source_data_table = source_data_table
                     validation_results.is_skewed = False
+
                     print 'This file is not skewed. Awesome.'
                 else:
+                    source_data_table = DataTable.from_delimited(
+                        file_path=file_path,
+                        delimiter=real_delimiter)
+                    validation_results.source_data_table = source_data_table
+                    validation_results.is_skewed = True
                     raise SkewedDataError
             else:
                 print 'This file does not have a header. Please append one.'
@@ -306,14 +388,25 @@ def main(file_path='',
                 with open(file_path_returned, 'wb') as file:
                     file.writelines([header, body])
 
+                source_data_table = DataTable.from_delimited_buffer(
+                    buffer=body,
+                    delimiter=real_delimiter)
+                processed_data_table = DataTable.from_delimited_buffer(
+                    buffer=header + body,
+                    delimiter=real_delimiter)
+                validation_results.source_data_table = source_data_table
+                validation_results.processed_data_table = processed_data_table
+
                 if is_not_skewed(file_path=file_path,
                                  delimiter=real_delimiter,
                                  header_file_path=header_file_path):
                     data_frame = pd.read_csv(file_path_returned, sep=real_delimiter)
+                    validation_results.is_skewed = False
                     message = ("""The data is not skewed, now has a header, and """
                                """has been returned to you for further testing.""")
                     print message
                 else:
+                    validation_results.is_skewed = True
                     raise SkewedDataError
             # Display the fields labels along with the corresponding
             # unique field values.
