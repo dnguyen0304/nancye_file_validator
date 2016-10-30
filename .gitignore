@@ -92,5 +92,5 @@ ENV/
 .idea/
 
 # Processed dummy data files
-data/*processed*
+data/*converted*
 data/*with-header*
