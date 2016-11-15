@@ -4,6 +4,7 @@
 import StringIO
 import csv
 import warnings
+from tabulate import tabulate
 
 import pandas as pd
 import xlrd
@@ -151,14 +152,12 @@ def print_skewness(file, delimiter):
         while row[-1] == '':
             row.pop()
         if len(row) > len(data[0]):
-            print data[0]
             skewed_line_number = data.index(row) + 1
             one_before = data.index(row) - 1
             one_after = data.index(row) + 1
             print 'The line number of the skewed row is: ', skewed_line_number
-            print data[one_before]
-            print row
-            print data[one_after]
+            table = [data[0], data[one_before], row, data[one_after]]
+            print tabulate(table)
 
 
 def print_headers(data_frame):
@@ -362,7 +361,7 @@ def main(file_path='',
                     validation_results.source_data_table = source_data_table
                     validation_results.is_skewed = False
 
-                    print 'This file is not skewed. Awesome.'
+                    print 'This file is not skewed. Please proceed to the next test. '
                 else:
                     source_data_table = DataTable.from_delimited(
                         file_path=file_path,
@@ -373,8 +372,9 @@ def main(file_path='',
             else:
                 print 'This file does not have a header. Please append one.'
                 header_file_path = header_file_path or raw_input(
-                    """Please specify the full path to the headers file (It """
-                    """must be formatted as a CSV): """)
+                    """Please specify the full path to the headers file. \n"""
+                    """(NOTE: The extension of the header must match the extension of the original file \n"""
+                    """UNLESS the original file is an Excel file. In this case, headers must be formatted as CSV.): """)
 
                 # Read in the header.
                 with open(header_file_path, 'rb') as file:
