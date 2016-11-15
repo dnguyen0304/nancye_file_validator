@@ -4,9 +4,9 @@
 import StringIO
 import csv
 import warnings
-from tabulate import tabulate
 
 import pandas as pd
+import tabulate
 import xlrd
 from nose.tools import assert_is_not_none
 
@@ -157,7 +157,7 @@ def print_skewness(file, delimiter):
             one_after = data.index(row) + 1
             print 'The line number of the skewed row is: ', skewed_line_number
             table = [data[0], data[one_before], row, data[one_after]]
-            print tabulate(table)
+            print tabulate.tabulate(table)
 
 
 def print_headers(data_frame):
